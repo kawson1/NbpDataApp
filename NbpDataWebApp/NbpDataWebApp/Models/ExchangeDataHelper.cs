@@ -9,13 +9,15 @@ public class ExchangeDataHelper
     {
         try
         {
+            var json = JObject.Parse(jsonString);
             float exRate = float.Parse(JObject.Parse(jsonString).SelectToken("rates[0].mid").ToString());
-            string currCode = JObject.Parse(jsonString).SelectToken("code").ToString();
+            string currCode = json.SelectToken("code").ToString();
 
             var ex = new ExchangeData
             {
                 currencyCode = currCode,
-                exchangeRate = exRate
+                exchangeRate = exRate,
+                effectiveDate = DateTime.Parse(json.SelectToken("rates[0].effectiveDate").ToString())
             };
 
             return ex;
@@ -95,6 +97,7 @@ public class ExchangeDataHelper
     {
         try
         {
+            
             var jsonObject = JObject.Parse(jsonString);
             var rates = jsonObject.SelectToken("rates");
             
@@ -104,6 +107,7 @@ public class ExchangeDataHelper
             {
                 return new ExchangeData
                 {
+                    currencyCode = jsonObject.SelectToken("code").ToString(),
                     effectiveDate = DateTime.Parse(rate.SelectToken("effectiveDate").ToString()),
                     bid = float.Parse(rate.SelectToken("bid").ToString()),
                     ask = float.Parse(rate.SelectToken("ask").ToString())

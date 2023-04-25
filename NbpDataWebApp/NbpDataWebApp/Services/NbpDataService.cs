@@ -4,11 +4,11 @@ namespace NbpDataWebApp.Services;
 
 public interface INbpDataService
 {
-    public Task<string> GetMajorBuySellDifference(string currencyCode, int count);
+    public Task<ExchangeData> GetMajorBuySellDifference(string currencyCode, int count);
 
-    public Task<string> GetSingleExchange(string currencyCode, string exchangeDate);
+    public Task<ExchangeData> GetSingleExchange(string currencyCode, string exchangeDate);
 
-    public Task<string> GetMinMaxExchanges(string currencyCode, int count);
+    public Task<(ExchangeData e1, ExchangeData e2)> GetMinMaxExchanges(string currencyCode, int count);
 
 }
 
@@ -21,52 +21,42 @@ public class NbpDataService : INbpDataService
         _httpClient = httpClient;
     }
     
-    public async Task<string> GetMajorBuySellDifference(string currencyCode, int count)
+    public async Task<ExchangeData> GetMajorBuySellDifference(string currencyCode, int count)
     {
         var response = await _httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/c/{currencyCode}/last/{count}/");
         if (response.IsSuccessStatusCode)
         {
             var responseString = await response.Content.ReadAsStringAsync();
-            ExchangeData exchange = ExchangeDataHelper.GetBuySellDiffFromJson(responseString);
-            return $"Major difference between buy & sell: {exchange.ask - exchange.bid}:\n\t" +
-                   $"Effective data: {exchange.effectiveDate.ToShortDateString()}\n\t" +
-                   $"Exchange bid: {exchange.bid}\n\t" +
-                   $"Exchange ask: {exchange.ask}";
+            return ExchangeDataHelper.GetBuySellDiffFromJson(responseString);
         }
         else
-            return $"Couldn't get data";
+            return null;
     }
 
-    public async Task<string> GetSingleExchange(string currencyCode, string exchangeDate)
+    public async Task<ExchangeData> GetSingleExchange(string currencyCode, string exchangeDate)
     {
         var response = await _httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/{exchangeDate}/");
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                ExchangeData ex = ExchangeDataHelper.GetDataFromJson(responseString);
-                return $"Exchange code: {ex.currencyCode}\nAverage exchange rate: {ex.exchangeRate}";
-            }
-            else
-                return $"Couldn't get data";
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseString = await response.Content.ReadAsStringAsync();
+            var ex = ExchangeDataHelper.GetDataFromJson(responseString);
+            return ex;
+        }
+        else
+            return null;
     }
 
-    public async Task<string> GetMinMaxExchanges(string currencyCode, int count)
+    public async Task<(ExchangeData e1, ExchangeData e2)> GetMinMaxExchanges(string currencyCode, int count)
     {
         var response = await _httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/last/{count}/");
         if (response.IsSuccessStatusCode)
         {
             var responseString = await response.Content.ReadAsStringAsync();
             var (min, max) = ExchangeDataHelper.GetMinMaxFromJson(responseString);
-            return $"Minimal exchange data for {currencyCode}:\n\t" +
-                   $"Effective data: {min.effectiveDate.ToShortDateString()}\n\t" +
-                   $"Exchange rate: {min.exchangeRate}\n" +
-                   
-                   $"Maximal exchange data for {currencyCode}:\n\t" +
-                   $"Effective data: {max.effectiveDate.ToShortDateString()}\n\t" +
-                   $"Exchange rate: {max.exchangeRate}";
+            return (min, max);
         }
         else
-            return $"Couldn't get data";
+            return (null, null);
     }
 }
