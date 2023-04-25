@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using NbpDataWebApp.Models;
@@ -8,15 +9,14 @@ namespace NbpDataWebApp.Controllers;
 [Route("NbpData")]
 public class NbpDataController : Controller
 {
-    // TODO: handle if there is no data for specific day
-    // TODO: handle if exchangeDate is correct format (yyyy-mm-dd)
     [HttpGet]
     [Route("exchanges/{currencyCode}/{exchangeDate:datetime}")]
-    public async Task<string> Exchange(string currencyCode, string exchangeDate)
+    public async Task<string> Exchange(string currencyCode, DateTime exchangeDate)
     {
         using (HttpClient httpClient = new HttpClient())
         {
-            var response = await httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/{exchangeDate}/");
+            var formattedDate = FormatDate(exchangeDate);
+            var response = await httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/{formattedDate}/");
             if (response.IsSuccessStatusCode)
             {
                 var responseString = await response.Content.ReadAsStringAsync();
@@ -70,6 +70,22 @@ public class NbpDataController : Controller
             }
             else
                 return $"Couldn't get data";
+        }
+    }
+
+    // Converts date from DateTime (dd.MM.yyyy -> yyyy-MM-dd format)
+    [NonAction]
+    public string FormatDate(DateTime date)
+    {
+        DateTime dt;
+        if (DateTime.TryParseExact(date.ToString("d"), "dd.MM.yyyy", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out dt))
+        {
+            return dt.ToString("yyyy-MM-dd");
+        }
+        else
+        {
+            return "Bad date format. (yyyy-MM-dd)";
         }
     }
 }
