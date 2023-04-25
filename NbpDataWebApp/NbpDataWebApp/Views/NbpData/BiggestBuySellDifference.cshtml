@@ -1,0 +1,27 @@
+@model NbpDataWebApp.Models.ExchangeData
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>Major difference sell & buy values</h2>
+<h4>Difference value: @Math.Abs(@Model.ask-@Model.bid).ToString()</h4>
+<table>
+    <thead>
+    <tr>
+        <th>Effective date</th>
+        <th>Currency code</th>
+        <th>Bid value</th>
+        <th>Ask value</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>@Model.effectiveDate.ToShortDateString()</td>
+        <td>@Model.currencyCode</td>
+        <td>@Model.bid.ToString()</td>
+        <td>@Model.ask.ToString()</td>
+    </tr>
+    </tbody>
+</table>

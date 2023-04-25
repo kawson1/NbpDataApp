@@ -1,0 +1,24 @@
+@model NbpDataWebApp.Models.ExchangeData
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>Single exchange value at specific date</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Effective date</th>
+            <th>Currency code</th>
+            <th>Exchange rate</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>@Model.effectiveDate.ToShortDateString()</td>
+        <td>@Model.currencyCode</td>
+        <td>@Model.exchangeRate.ToString()</td>
+    </tr>
+    </tbody>
+</table>

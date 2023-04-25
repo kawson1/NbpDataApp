@@ -1,0 +1,29 @@
+@model Tuple<ExchangeData, ExchangeData>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>Minimal and maximal exchanges</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Effective date</th>
+            <th>Currency code</th>
+            <th>Exchange rate</th>
+        </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>@Model.Item1.effectiveDate.ToShortDateString()</td>
+        <td>@Model.Item1.currencyCode</td>
+        <td>@Model.Item1.exchangeRate.ToString()</td>
+    </tr>
+    <tr>
+            <td>@Model.Item2.effectiveDate.ToShortDateString()</td>
+            <td>@Model.Item2.currencyCode</td>
+            <td>@Model.Item2.exchangeRate.ToString()</td>
+        </tr>
+    </tbody>
+</table>
