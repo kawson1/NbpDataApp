@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using NbpDataWebApp.Models;
+using NbpDataWebApp.Services;
 
 namespace NbpDataWebApp.Controllers;
 
@@ -9,83 +10,31 @@ namespace NbpDataWebApp.Controllers;
 [Route("NbpData")]
 public class NbpDataController : Controller
 {
+    private INbpDataService _nbpDataService;
+
+    public NbpDataController(INbpDataService nbpDataService)
+    {
+        _nbpDataService = nbpDataService;
+    }
+    
     [HttpGet]
     [Route("exchanges/{currencyCode}/{exchangeDate:datetime}")]
     public async Task<string> Exchange(string currencyCode, string exchangeDate)
     {
-        using (HttpClient httpClient = new HttpClient())
-        {
-            var response = await httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/{exchangeDate}/");
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                ExchangeData ex = ExchangeDataModel.GetDataFromJson(responseString);
-                return $"Exchange code: {ex.currencyCode}\nAverage exchange rate: {ex.exchangeRate}";
-            }
-            else
-                return $"Couldn't get data";
-        }
+        return await _nbpDataService.GetSingleExchange(currencyCode, exchangeDate);
     }
     
     [HttpGet]
     [Route("exchanges/{currencyCode}/{count:int}")]
     public async Task<string> MinMaxExchange(string currencyCode, int count)
     {
-        using (HttpClient httpClient = new HttpClient())
-        {
-            var response = await httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/last/{count}/");
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                var (min, max) = ExchangeDataModel.GetMinMaxFromJson(responseString);
-                return $"Minimal exchange data for {currencyCode}:\n\t" +
-                       $"Effective data: {min.effectiveDate.ToShortDateString()}\n\t" +
-                       $"Exchange rate: {min.exchangeRate}\n" +
-                       
-                       $"Maximal exchange data for {currencyCode}:\n\t" +
-                       $"Effective data: {max.effectiveDate.ToShortDateString()}\n\t" +
-                       $"Exchange rate: {max.exchangeRate}";
-            }
-            else
-                return $"Couldn't get data";
-        }
+        return await _nbpDataService.GetMinMaxExchanges(currencyCode, count);
     }
     
     [HttpGet]
     [Route("buyselldiff/{currencyCode}/{count:int}")]
     public async Task<string> BiggestBuySellDifference(string currencyCode, int count)
     {
-        using (HttpClient httpClient = new HttpClient())
-        {
-            var response = await httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/c/{currencyCode}/last/{count}/");
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                ExchangeData exchange = ExchangeDataModel.GetBuySellDiffFromJson(responseString);
-                return $"Major difference between buy & sell: {exchange.ask - exchange.bid}:\n\t" +
-                       $"Effective data: {exchange.effectiveDate.ToShortDateString()}\n\t" +
-                       $"Exchange bid: {exchange.bid}\n\t" +
-                       $"Exchange ask: {exchange.ask}";
-            }
-            else
-                return $"Couldn't get data";
-        }
-    }
-
-    // Converts date from DateTime (dd.MM.yyyy -> yyyy-MM-dd format)
-    [NonAction]
-    public string FormatDate(DateTime date)
-    {
-        DateTime dt;
-        if (DateTime.TryParseExact(date.ToString("d"), "dd.MM.yyyy", CultureInfo.InvariantCulture,
-                DateTimeStyles.None, out dt))
-        {
-            return dt.ToString("yyyy-MM-dd");
-        }
-        else
-        {
-            return "Bad date format. (yyyy-MM-dd)";
-        }
+        return await _nbpDataService.GetMajorBuySellDifference(currencyCode, count);
     }
 }
