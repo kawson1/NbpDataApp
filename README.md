@@ -3,11 +3,16 @@ This is a .NET 6 web application that retrieves and processes data from a bankin
 
 
 ## Setup
-To run the application, execute the command
+To run the application, clone repository and execute the command
 ```docker build -t nbp-data-app -f Dockerfile .```
 from the repository folder (NbpDataWebApp). Then run the command 
 ```docker create -p 80:80 --name nbpapp nbp-data-app```
  to create a container for the application.
+
+Alternatively you can download image from docker hub
+```
+https://hub.docker.com/layers/kawson/nbp_data_application/latest/images/sha256-145de87bf05d3486cb637cb75de43c20afa3f91aa3aa6009b89055c7dbfa5985?context=repo
+```
 
 ## Endpoints
 After running the container, you can use the following endpoints:
