@@ -3,7 +3,6 @@ using Newtonsoft.Json.Linq;
 
 namespace NbpDataWebApp.Models;
 
-// TODO: merge this object into smaller DTO objects
 public class ExchangeData
 { 
     public string currencyCode;
@@ -108,7 +107,6 @@ public static class ExchangeDataModel
             var jsonObject = JObject.Parse(jsonString);
             var rates = jsonObject.SelectToken("rates");
             
-            Console.WriteLine(rates);
             List<ExchangeData> exchanges = 
                 rates.AsEnumerable()
                     .Select(rate =>

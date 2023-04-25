@@ -11,12 +11,12 @@ public class NbpDataController : Controller
 {
     [HttpGet]
     [Route("exchanges/{currencyCode}/{exchangeDate:datetime}")]
-    public async Task<string> Exchange(string currencyCode, DateTime exchangeDate)
+    public async Task<string> Exchange(string currencyCode, string exchangeDate)
     {
         using (HttpClient httpClient = new HttpClient())
         {
-            var formattedDate = FormatDate(exchangeDate);
-            var response = await httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/{formattedDate}/");
+            var response = await httpClient.GetAsync($"http://api.nbp.pl/api/exchangerates/rates/a/{currencyCode}/{exchangeDate}/");
+            
             if (response.IsSuccessStatusCode)
             {
                 var responseString = await response.Content.ReadAsStringAsync();
